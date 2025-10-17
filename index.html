@@ -80,6 +80,59 @@
             background-color: #10b981;
             transform: scale(1.02);
         }
+
+        /* --- Quiz Modal Styles --- */
+        #quiz-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none; /* Hidden by default */
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        #quiz-content {
+            background-color: var(--info-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 0 40px rgba(52, 211, 153, 0.7);
+            max-width: 90%;
+            text-align: center;
+        }
+
+        #quiz-message {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* Custom button style for touch controls */
+        .btn-control {
+            background-color: var(--info-bg);
+            color: var(--primary-color);
+            font-weight: bold;
+            border-radius: 8px;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.1s;
+            user-select: none; /* Prevent text selection on touch */
+            flex-grow: 1; /* Make buttons expand */
+            margin: 4px;
+            line-height: 1.25; /* Fix line height for better button fit */
+            min-width: 60px; /* Ensure a minimum touch target size */
+        }
+
+        .btn-control:active {
+            background-color: var(--primary-color);
+            color: var(--info-bg);
+            transform: translateY(2px);
+            box-shadow: none;
+        }
         
         /* Mobile adjustment for game board size */
         @media (max-width: 600px) {
@@ -97,6 +150,15 @@
         <div class="w-full lg:w-1/3 p-4 bg-gray-800 rounded-lg shadow-inner">
             <h2 class="text-xl mb-4 text-primary-color">FINANCIAL DASHBOARD</h2>
 
+            <!-- Score / Lines Cleared -->
+             <div class="mb-4 p-3 bg-gray-700 rounded-md">
+                <p class="text-sm text-gray-400">Total Lines Cleared:</p>
+                <div id="lines-cleared-display" class="text-3xl font-bold text-white">0</div>
+                <p id="quiz-progress" class="text-xs mt-1 text-primary-color font-mono">
+                    Next Challenge in 10 lines
+                </p>
+            </div>
+
             <!-- Profit/Loss Display -->
             <div class="mb-4 p-3 bg-gray-700 rounded-md">
                 <p class="text-sm text-gray-400">Profit / Loss (P = R - VC - FC):</p>
@@ -111,7 +173,7 @@
             <!-- Key Financial Metrics -->
             <div class="space-y-2 text-left text-sm">
                 <p><span class="text-gray-400">Fixed Cost (FC):</span> <span id="fixed-cost-display" class="font-mono text-white">$500</span></p>
-                <p><span class="text-gray-400">Selling Price per Line (R):</span> <span id="selling-price-display" class="font-mono text-white">$100</span></p>
+                <p><span class="text-gray-400">Selling Price per Line (R):</span> <span id="selling-price-display" class="font-mono text-white">$150</span></p>
                 <p><span class="text-gray-400">Variable Cost per Block (VC):</span> <span id="variable-cost-display" class="font-mono text-white">$10</span></p>
                 <p><span class="text-gray-400">Blocks Placed:</span> <span id="blocks-placed-display" class="font-mono text-white">0</span></p>
             </div>
@@ -132,25 +194,71 @@
             <canvas id="game-board" width="200" height="400" class="rounded-lg mb-4"></canvas>
             
             <!-- Controls Hint -->
-            <div class="text-center text-xs text-gray-500 mt-2">
+            <div class="text-center text-xs text-gray-500 mt-2 mb-4">
                 Use Arrow Keys (←, →, ↓) to Move | (↑ or Space) to Rotate
+            </div>
+
+            <!-- Touch Controls for Mobile Users -->
+            <div id="touch-controls" class="w-full max-w-sm p-2 mt-4 bg-gray-900 rounded-xl shadow-inner">
+                <div class="flex justify-center mb-2">
+                    <button id="btn-rotate" class="btn-control p-3 text-sm flex-1 max-w-xs">
+                        ⟳ ROTATE
+                    </button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button id="btn-left" class="btn-control p-3 text-sm">
+                        ← LEFT
+                    </button>
+                    <button id="btn-down" class="btn-control p-3 text-sm bg-danger-color hover:bg-red-700 border-danger-color">
+                        ↓ DROP
+                    </button>
+                    <button id="btn-right" class="btn-control p-3 text-sm">
+                        RIGHT →
+                    </button>
+                </div>
             </div>
         </div>
 
     </div>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal">
+        <div id="quiz-content" class="w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3">
+            <h3 class="text-2xl font-bold text-primary-color mb-4">
+                <span class="text-danger-color">CHALLENGE:</span> Financial Calculation
+            </h3>
+            <p id="quiz-question" class="text-lg mb-4 text-white"></p>
+            <p class="text-sm text-gray-400 mb-2">Answer (Enter a whole number):</p>
+            <input type="number" id="quiz-input" class="w-full p-2 mb-4 text-center text-xl rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-color" placeholder="e.g., 500">
+            
+            <button id="submit-quiz" class="btn-game w-full">Submit Answer</button>
+            
+            <p id="quiz-message" class="text-center text-white"></p>
+        </div>
+    </div>
+
 
     <script>
         // --- GAME CONSTANTS ---
         const COLS = 10;
         const ROWS = 20;
         const BLOCK_SIZE = 20; // Must match --tile-size in CSS
-        const INITIAL_SPEED = 1000; // ms
+        const INITIAL_SPEED = 1200; // ms (Increased from 1000 for easier gameplay)
 
         // --- FINANCIAL CONSTANTS (Breakeven Analysis) ---
-        const FIXED_COST = 500;
-        const SELLING_PRICE_PER_LINE = 100;
+        const FIXED_COST = 400; // Reduced from 500 for easier breakeven
+        const SELLING_PRICE_PER_LINE = 160; // Increased from 150 for easier breakeven
         const VARIABLE_COST_PER_BLOCK = 10;
+        const BLOCKS_PER_PIECE = 4;
+        const QUIZ_FREQUENCY = 10; // Trigger quiz every 10 lines cleared
+        const QUIZ_BONUS = 200; // Financial reward for a correct answer
         const MAX_LOSS_THRESHOLD = -700; // Bankruptcy if Profit/Loss drops below this
+
+        // --- DERIVED FINANCIALS (Used for Quiz Answers) ---
+        const VC_PER_LINE = VARIABLE_COST_PER_BLOCK * COLS; // $10 * 10 = $100
+        const CM_PER_LINE = SELLING_PRICE_PER_LINE - VC_PER_LINE; // $160 - $100 = $60
+        // Calculate BEP: $400 / $60 = 6.67 lines. Round up to 7 lines needed to cover costs.
+        const BEP_IN_LINES = Math.ceil(FIXED_COST / CM_PER_LINE); // New BEP is 7 lines
 
         // --- GAME VARIABLES ---
         let board;
@@ -158,10 +266,14 @@
         let nextPiece;
         let profitLoss;
         let blocksPlaced;
+        let linesClearedTotal;
         let gameLoop;
         let isGameOver;
         let isPaused;
         let speed = INITIAL_SPEED;
+
+        // --- Quiz Variables ---
+        let currentQuizAnswer = 0;
 
         // --- DOM Elements ---
         const boardCanvas = document.getElementById('game-board');
@@ -173,6 +285,22 @@
         const breakevenStatus = document.getElementById('breakeven-status');
         const gameMessage = document.getElementById('game-message');
         const blocksPlacedDisplay = document.getElementById('blocks-placed-display');
+        const linesClearedDisplay = document.getElementById('lines-cleared-display');
+        const quizProgressDisplay = document.getElementById('quiz-progress');
+
+        // Quiz DOM
+        const quizModal = document.getElementById('quiz-modal');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizInput = document.getElementById('quiz-input');
+        const quizSubmit = document.getElementById('submit-quiz');
+        const quizMessage = document.getElementById('quiz-message');
+        
+        // Touch Control DOM
+        const btnRotate = document.getElementById('btn-rotate');
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnDown = document.getElementById('btn-down');
+
 
         // Set canvas dimensions based on constants
         boardCanvas.width = COLS * BLOCK_SIZE;
@@ -208,6 +336,7 @@
             // Set initial state: Loss equals Fixed Costs
             profitLoss = -FIXED_COST;
             blocksPlaced = 0;
+            linesClearedTotal = 0;
 
             // Update static displays
             document.getElementById('fixed-cost-display').textContent = `$${FIXED_COST}`;
@@ -221,7 +350,7 @@
             isGameOver = false;
             isPaused = false;
             speed = INITIAL_SPEED;
-            gameMessage.textContent = 'Use the arrow keys to play.';
+            gameMessage.textContent = 'Use the arrow keys or touch controls to play.';
         }
 
         function drawSquare(ctx, x, y, colorIndex) {
@@ -310,9 +439,10 @@
             nextPiece = createPiece();
             drawNextPiece();
             
-            // Apply Variable Cost
-            profitLoss -= VARIABLE_COST_PER_BLOCK;
-            blocksPlaced++;
+            // Apply Variable Cost correctly (VC per block * 4 blocks per piece)
+            profitLoss -= VARIABLE_COST_PER_BLOCK * BLOCKS_PER_PIECE;
+            // Increment blocksPlaced by 4 (the actual number of blocks/units)
+            blocksPlaced += BLOCKS_PER_PIECE;
 
             if (checkCollision(0, 0)) {
                 gameOver('Stack reached the top!');
@@ -384,6 +514,7 @@
                 });
             });
             clearLines();
+            // We spawn the next piece after clearing lines
             spawnPiece();
             drawBoard();
         }
@@ -406,14 +537,27 @@
             }
 
             if (linesCleared > 0) {
-                // Calculate Revenue and update Profit/Loss
+                // Apply Revenue
                 const revenueGained = linesCleared * SELLING_PRICE_PER_LINE;
                 profitLoss += revenueGained;
                 
+                // Update total lines cleared and check for quiz trigger
+                linesClearedTotal += linesCleared;
+                checkQuizTrigger();
+
                 // Increase speed for clearing lines (simulates scaling difficulty)
-                speed = Math.max(50, speed - (10 * linesCleared)); 
+                // Reduced the speed increase factor from 10 to 5 for easier scaling
+                speed = Math.max(50, speed - (5 * linesCleared)); 
                 clearInterval(gameLoop);
                 gameLoop = setInterval(dropPiece, speed);
+            }
+        }
+
+        function checkQuizTrigger() {
+            if (linesClearedTotal > 0 && linesClearedTotal % QUIZ_FREQUENCY === 0) {
+                // Pause game and show quiz
+                pauseGame(true); // Pause without changing button text
+                showQuizModal();
             }
         }
         
@@ -426,7 +570,10 @@
             profitLossDisplay.classList.remove('profit-text', 'loss-text');
             if (isLoss) {
                 profitLossDisplay.classList.add('loss-text');
-                profitLossDisplay.prepend(document.createTextNode('-'));
+                // Ensure '-' sign is prepended correctly
+                if (profitLossDisplay.firstChild?.nodeValue !== '-') {
+                    profitLossDisplay.prepend(document.createTextNode('-'));
+                }
             } else {
                 profitLossDisplay.classList.add('profit-text');
             }
@@ -448,6 +595,60 @@
             }
             
             blocksPlacedDisplay.textContent = blocksPlaced;
+            linesClearedDisplay.textContent = linesClearedTotal;
+            quizProgressDisplay.textContent = `Next Challenge in ${QUIZ_FREQUENCY - (linesClearedTotal % QUIZ_FREQUENCY)} lines`;
+        }
+
+        // --- QUIZ LOGIC ---
+
+        function generateQuiz() {
+            const quizType = Math.random() < 0.5 ? 0 : 1; // 0 for CM, 1 for BEP
+
+            if (quizType === 0) {
+                // Contribution Margin (CM) Question
+                quizQuestion.textContent = `CHALLENGE 1: What is the Contribution Margin per Line in dollars? (R per Line: $${SELLING_PRICE_PER_LINE}, VC per Line: $${VC_PER_LINE})`;
+                currentQuizAnswer = CM_PER_LINE;
+            } else {
+                // Break-Even Point (BEP) Question
+                quizQuestion.textContent = `CHALLENGE 2: How many Lines must be cleared to reach the Breakeven Point? (FC: $${FIXED_COST}, CM per Line: $${CM_PER_LINE})`;
+                currentQuizAnswer = BEP_IN_LINES;
+            }
+
+            quizInput.value = '';
+            quizMessage.textContent = 'Enter your financial calculation result.';
+        }
+
+        function showQuizModal() {
+            generateQuiz();
+            quizModal.style.display = 'flex';
+        }
+
+        function checkQuizAnswer() {
+            const userAnswer = parseInt(quizInput.value, 10);
+            
+            if (isNaN(userAnswer)) {
+                quizMessage.textContent = 'Please enter a valid number.';
+                return;
+            }
+
+            if (userAnswer === currentQuizAnswer) {
+                // Success!
+                profitLoss += QUIZ_BONUS;
+                updateFinancialDisplay();
+                quizMessage.innerHTML = `<span class="profit-text font-bold">CORRECT!</span> You earned a $${QUIZ_BONUS} bonus.`;
+                quizInput.disabled = true;
+                quizSubmit.textContent = 'Continue Game';
+                quizSubmit.onclick = () => {
+                    quizModal.style.display = 'none';
+                    quizInput.disabled = false;
+                    quizSubmit.textContent = 'Submit Answer';
+                    quizSubmit.onclick = checkQuizAnswer; // Reset handler
+                    resumeGame();
+                };
+            } else {
+                // Failure
+                quizMessage.innerHTML = '<span class="loss-text font-bold">INCORRECT.</span> Review the formula and try again.';
+            }
         }
 
 
@@ -471,9 +672,9 @@
             initFinancials();
             initBoard();
             
-            // Reset button text
+            // Reset button text and handler
             startButton.textContent = 'Pause Game';
-            startButton.onclick = pauseGame;
+            startButton.onclick = () => pauseGame(false); 
             gameMessage.textContent = 'Game Running. Current Speed: 1.0x';
 
             spawnPiece(); // Start the first piece drop
@@ -481,17 +682,26 @@
             updateFinancialDisplay();
         }
 
-        function pauseGame() {
-            isPaused = !isPaused;
-            if (isPaused) {
-                clearInterval(gameLoop);
+        function pauseGame(isExternalPause = false) {
+            isPaused = true;
+            clearInterval(gameLoop);
+
+            if (!isExternalPause) {
                 startButton.textContent = 'Resume Game';
-                gameMessage.textContent = 'PAUSED. Costs still apply when not playing... (just kidding, it\'s paused).';
-            } else {
-                gameLoop = setInterval(dropPiece, speed);
-                startButton.textContent = 'Pause Game';
-                gameMessage.textContent = `Game Running. Current Speed: ${(INITIAL_SPEED/speed).toFixed(1)}x`;
+                startButton.onclick = resumeGame;
+                gameMessage.textContent = 'PAUSED.';
             }
+        }
+
+        function resumeGame() {
+            isPaused = false;
+            if (gameLoop) clearInterval(gameLoop);
+            gameLoop = setInterval(dropPiece, speed);
+            
+            // Reset button and message
+            startButton.textContent = 'Pause Game';
+            startButton.onclick = () => pauseGame(false);
+            gameMessage.textContent = `Game Running. Current Speed: ${(INITIAL_SPEED/speed).toFixed(1)}x`;
         }
 
         function gameOver(reason) {
@@ -508,11 +718,34 @@
                  gameMessage.innerHTML += '<br><span class="loss-text">Failed to cover Fixed Costs.</span>';
             }
         }
+        
+        // --- TOUCH CONTROL SETUP ---
+        function setupTouchControls() {
+            // Helper function to prevent default touch/drag behavior
+            const preventDefaults = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            };
+
+            // Attach event listeners for touch and click
+            btnRotate.addEventListener('touchstart', (e) => { preventDefaults(e); rotatePiece(); }, { passive: false });
+            btnRotate.addEventListener('click', rotatePiece);
+
+            btnLeft.addEventListener('touchstart', (e) => { preventDefaults(e); movePiece('left'); }, { passive: false });
+            btnLeft.addEventListener('click', () => movePiece('left'));
+
+            btnRight.addEventListener('touchstart', (e) => { preventDefaults(e); movePiece('right'); }, { passive: false });
+            btnRight.addEventListener('click', () => movePiece('right'));
+
+            btnDown.addEventListener('touchstart', (e) => { preventDefaults(e); movePiece('down'); }, { passive: false });
+            btnDown.addEventListener('click', () => movePiece('down'));
+        }
+
 
         // --- EVENT LISTENERS ---
 
         document.addEventListener('keydown', (e) => {
-            if (isGameOver || isPaused) return;
+            if (isGameOver || isPaused || quizModal.style.display === 'flex') return;
 
             if (currentPiece) {
                 switch (e.key) {
@@ -536,6 +769,14 @@
                 }
             }
         });
+
+        // Quiz Submit Listener
+        quizSubmit.onclick = checkQuizAnswer;
+        quizInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkQuizAnswer();
+            }
+        });
         
         startButton.onclick = startGame;
         
@@ -546,6 +787,7 @@
              drawBoard();
              drawNextPiece();
              updateFinancialDisplay();
+             setupTouchControls(); // Initialize touch controls
         });
 
     </script>
