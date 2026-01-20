@@ -1,693 +1,267 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vocabulary Quiz Master: Advanced Interactive English-Russian</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Статистический Олимп - Final Stable</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        /* --- General Styles & Background --- */
+        :root {
+            --primary: #00d2ff;
+            --junior: #00b894;
+            --middle: #fdcb6e;
+            --senior: #d63031;
+            --bg: #0b0e14;
+            --glass: rgba(255, 255, 255, 0.08);
+        }
+
         body {
-            font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, #13172e 0%, #202b50 100%); /* Very Deep Blue Gradient */
-            color: #ecf0f1;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: radial-gradient(circle at top right, #1e1e2f, #0b0e14);
+            color: white;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 20px;
             min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Предотвращает дергание при анимациях */
         }
 
-        h1 {
-            color: #ffc300; /* Gold for heading */
-            margin-bottom: 10px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        #score-board {
-            font-size: 1.5em;
-            margin-bottom: 25px;
-            padding: 10px 25px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            border: 2px solid #5d9cec;
-            box-shadow: 0 0 15px rgba(93, 156, 236, 0.7);
-        }
-
-        /* --- Quiz Container (The Main Card) --- */
-        #quiz-container {
-            width: 90%;
-            max-width: 700px;
-            background: #ffffff;
-            color: #333;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            animation: fadeIn 0.8s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #word-display {
-            font-size: 3.5em;
-            font-weight: 900;
-            color: #e74c3c; /* Dark Red */
-            margin-bottom: 20px;
-            text-transform: capitalize;
-            border-bottom: 4px solid #c0392b;
-            padding-bottom: 10px;
-        }
-
-        #options-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* Two columns for options */
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .option-button {
-            background-color: #3498db; 
-            color: white;
-            border: none;
-            padding: 18px;
-            font-size: 1.2em;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 5px 0 #2c3e50; /* 3D effect */
-        }
-
-        .option-button:hover:not(:disabled) {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 7px 0 #2c3e50;
-        }
-        
-        .option-button:active:not(:disabled) {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #2c3e50;
-        }
-
-        .option-button:disabled {
-            cursor: default;
-            opacity: 0.7;
-            box-shadow: 0 2px 0 #2c3e50;
-        }
-
-        /* --- Hint Section --- */
-        #hint-container {
-            margin: 15px 0;
-            min-height: 20px;
-        }
-        
-        #hint-button {
-            padding: 10px 20px;
-            background-color: #f39c12; /* Orange for hint */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: background-color 0.2s;
-            box-shadow: 0 3px 0 #d35400;
-        }
-        
-        #hint-button:hover {
-            background-color: #e67e22;
-        }
-        
-        #hint-display {
-            color: #2c3e50;
-            font-style: italic;
-            padding: 15px;
-            background-color: #fffbe6; /* Light yellow background */
-            border-left: 5px solid #f1c40f;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-weight: 500;
-            text-align: left;
-        }
-
-        /* --- Feedback & Control Buttons --- */
-        #feedback-message {
-            min-height: 24px;
-            margin: 30px 0 20px 0;
-            font-size: 1.3em;
-            font-style: italic;
-            font-weight: bold;
-        }
-
-        .correct {
-            color: #2ecc71; 
-            animation: pulse 0.5s ease-in-out 3;
-        }
-
-        .incorrect {
-            color: #e74c3c; 
-        }
-        
-        .correct-highlight {
-            background-color: #27ae60 !important; 
-            color: white !important;
-            border: 3px solid #1e8449;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        #control-buttons {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            max-width: 450px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .control-btn {
-            padding: 15px 25px;
-            font-size: 1.1em;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
-            font-weight: bold;
-        }
-        
-        #next-button {
-            background: linear-gradient(90deg, #3498db, #2980b9); 
-            display: none; 
-        }
-        
-        #review-button {
-            background: linear-gradient(90deg, #9b59b6, #8e44ad); 
-            display: none; 
-        }
-        
-        #next-button:hover, #review-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        /* --- Review Modal/Section --- */
-        #review-section {
-            display: none;
-            width: 90%;
-            max-width: 700px;
-            background: #ecf0f1;
-            color: #333;
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
             padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            margin-top: 30px;
-            animation: slideIn 0.5s;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
+            border-radius: 24px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 1;
         }
 
-        #review-section h2 {
-            color: #8e44ad;
-            border-bottom: 3px solid #8e44ad;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 2em;
+        .hidden { display: none !important; }
+
+        h1 { text-align: center; margin-bottom: 10px; background: linear-gradient(45deg, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2rem; }
+
+        .level-select { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+
+        .lvl-btn {
+            padding: 18px; border-radius: 12px; border: 2px solid transparent;
+            cursor: pointer; color: white; font-weight: 700; transition: all 0.2s ease;
+            text-align: center; background: rgba(255,255,255,0.05);
         }
 
-        #mistake-list {
-            list-style: none;
-            padding: 0;
-            text-align: left;
+        .lvl-btn.jnr:hover { border-color: var(--junior); background: rgba(0, 184, 148, 0.1); }
+        .lvl-btn.mid:hover { border-color: var(--middle); background: rgba(253, 203, 110, 0.1); }
+        .lvl-btn.snr:hover { border-color: var(--senior); background: rgba(214, 48, 49, 0.1); }
+
+        input {
+            width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #333;
+            background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px; box-sizing: border-box;
+            outline: none; font-size: 1rem;
         }
 
-        #mistake-list li {
-            background-color: #ffffff;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            font-size: 1.2em;
-            border-left: 5px solid #e74c3c;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .opt-btn {
+            width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white;
+            text-align: left; cursor: pointer; transition: 0.2s; font-size: 1rem;
         }
-        
-        .mistake-en {
-            font-weight: 700;
-            color: #34495e;
-            margin-right: 10px;
-        }
+        .opt-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); transform: translateX(5px); }
 
-        .correct-translation {
-            color: #c0392b;
-            font-weight: bold;
-        }
+        .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 20px 0; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; border-radius: 10px; transition: 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
 
-        .review-info {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin-top: 5px;
-            display: block;
-        }
-        
-        #review-list-info {
-            color: #2c3e50;
-            margin-top: 15px;
-            font-weight: 600;
-        }
+        #review-list { max-height: 380px; overflow-y: auto; margin-top: 15px; padding-right: 8px; }
+        .rev-card { padding: 12px; border-radius: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.2); border-left: 4px solid var(--senior); }
+        .rev-card.is-ok { border-left-color: var(--junior); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>🧠 Russian Vocab Challenge! 🚀</h1>
-    <div id="score-board">
-        Score: <span id="current-score">0</span>
-    </div>
-
-    <div id="quiz-container">
-        <div id="word-display">Loading Word...</div>
-        
-        <div id="hint-container">
-            <button id="hint-button" class="control-btn">💡 Get Hint</button>
-            <div id="hint-display" style="display:none;"></div>
-        </div>
-
-        <div id="options-container">
-            </div>
-
-        <div id="feedback-message">Choose the correct Russian translation.</div>
-        
-        <div id="control-buttons">
-            <button id="next-button" class="control-btn">Next Challenge &raquo;</button>
-            <button id="review-button" class="control-btn">📚 Review Mistakes</button>
+    <div id="scr-start" class="card animate__animated animate__zoomIn">
+        <h1>STAT-OLYMPUS</h1>
+        <p style="text-align: center; opacity: 0.7; font-size: 0.9rem;">Проверьте свои знания статистики</p>
+        <input type="text" id="userName" placeholder="Введите ваш никнейм..." maxlength="15">
+        <div class="level-select">
+            <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: -5px;">Выберите сложность:</div>
+            <button class="lvl-btn jnr" onclick="startGame('junior')">JUNIOR (Легко)</button>
+            <button class="lvl-btn mid" onclick="startGame('middle')">MIDDLE (Средне)</button>
+            <button class="lvl-btn snr" onclick="startGame('senior')">SENIOR (Сложно)</button>
         </div>
     </div>
-    
-    <div id="review-section">
-        <h2>📚 Ваши Ошибки (Mistakes Review)</h2>
-        <ul id="mistake-list">
-            </ul>
-        <div id="review-list-info">Нажмите кнопку 'Start New Game', чтобы повторить все слова, включая эти ошибки, в новом раунде.</div>
+
+    <div id="scr-game" class="card hidden">
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+            <span id="q-step">1 / 15</span>
+            <span id="lvl-display" style="font-weight: bold; color: var(--primary);"></span>
+        </div>
+        <div class="progress-bar"><div id="bar" class="progress-fill"></div></div>
+        <h2 id="question-text" style="min-height: 70px; font-size: 1.2rem; line-height: 1.4;"></h2>
+        <div id="options-box"></div>
+    </div>
+
+    <div id="scr-end" class="card hidden">
+        <h1 id="score-heading"></h1>
+        <div id="review-list"></div>
+        <button class="lvl-btn" style="width:100%; margin-top:15px; background: var(--primary); border:none;" onclick="location.reload()">ВЕРНУТЬСЯ В МЕНЮ</button>
     </div>
 
     <script>
-        // --- Word List and Translations with Hints (Expanded and Revised) ---
-        // 'hint' is now a synonym, antonym, or related phrase.
-        const wordList = [
-            { en: "about", ru: "о", hint: "Synonym: Concerning, Regarding. (Preposition)" }, 
-            { en: "above", ru: "выше", hint: "Antonym: Below. In a higher place." }, 
-            { en: "across", ru: "через", hint: "Synonym: Over, beyond. From one side to the other." },
-            { en: "add", ru: "добавить", hint: "Antonym: Subtract. To combine two or more numbers." }, 
-            { en: "adult", ru: "взрослый", hint: "Antonym: Child. A person who is fully grown." }, 
-            { en: "affect", ru: "влиять", hint: "Synonym: Influence, impact. To produce a change." }, 
-            { en: "alert", ru: "бдительный", hint: "Synonym: Watchful, vigilant. Ready for danger." }, 
-            { en: "allow", ru: "позволять", hint: "Antonym: Forbid, deny. To give permission." }, 
-            { en: "ambassador", ru: "посол", hint: "A high-ranking diplomat representing a country." }, 
-            { en: "area", ru: "область", hint: "Synonym: Region, zone. A specific section of land or knowledge." },
-            { en: "arrive", ru: "прибывать", hint: "Antonym: Depart, leave. To reach a destination." }, 
-            { en: "attend", ru: "посещать", hint: "Synonym: Participate, be present at. (e.g., a meeting)." }, 
-            { en: "bake", ru: "печь", hint: "To cook food using dry heat, usually in an oven." }, 
-            { en: "bear", ru: "медведь", hint: "A large, strong, furry animal." },
-            { en: "become", ru: "становиться", hint: "To begin to be, or to turn into something else." },
-            { en: "believe", ru: "верить", hint: "Antonym: Doubt. To accept as true." }, 
-            { en: "benefit", ru: "выгода", hint: "Synonym: Advantage, profit. A helpful or good result." }, 
-            { en: "better", ru: "лучше", hint: "Comparative form of 'good'. Superior quality." },
-            { en: "brave", ru: "храбрый", hint: "Antonym: Cowardly. Showing courage." }, 
-            { en: "breathe", ru: "дышать", hint: "To take air into and send air out of the lungs." },
-            { en: "burn", ru: "сжигать", hint: "To destroy or be destroyed by fire." },
-            { en: "calm", ru: "спокойный", hint: "Antonym: Excited, nervous. Peaceful and quiet." }, 
-            { en: "camel", ru: "верблюд", hint: "An animal with a large hump often used in deserts." }, 
-            { en: "careful", ru: "осторожный", hint: "Antonym: Careless. Paying close attention to avoid danger." }, 
-            { en: "catch", ru: "ловить", hint: "Antonym: Throw. To capture something in motion." }, 
-            { en: "century", ru: "век", hint: "A period equal to 100 years." }, 
-            { en: "chance", ru: "шанс", hint: "Synonym: Opportunity, possibility. A good or favorable time." },
-            { en: "cheap", ru: "дешевый", hint: "Antonym: Expensive. Low in price." }, 
-            { en: "choose", ru: "выбирать", hint: "Synonym: Select, pick. To decide which is the best." }, 
-            { en: "climb", ru: "подниматься", hint: "Synonym: Ascend. To go up a mountain or wall." },
-            { en: "collect", ru: "собирать", hint: "Synonym: Gather, accumulate. To bring things together." },
-            { en: "comfortable", ru: "удобный", hint: "Antonym: Uncomfortable. Providing physical ease." }, 
-            { en: "communicate", ru: "общаться", hint: "To share information or express ideas." },
-            { en: "competition", ru: "конкурс", hint: "A contest or challenge against others." }, 
-            { en: "connect", ru: "соединять", hint: "Antonym: Disconnect. To join or link together." }, 
-            { en: "continue", ru: "продолжать", hint: "Antonym: Stop, cease. To persist in an activity." }, 
-            { en: "dangerous", ru: "опасный", hint: "Antonym: Safe. Likely to cause harm." }, 
-            { en: "dead", ru: "мертвый", hint: "Antonym: Alive. No longer living." },
-            { en: "decision", ru: "решение", hint: "A choice that you make after thinking." }, 
-            { en: "describe", ru: "описывать", hint: "To give an account in words of someone or something." }, 
-            { en: "desert", ru: "пустыня", hint: "A large, sandy, dry area of land." },
-            { en: "destroy", ru: "уничтожать", hint: "Synonym: Ruin, demolish. To ruin the existence of." }, 
-            { en: "difficult", ru: "трудный", hint: "Antonym: Easy, simple. Needing much effort or skill." }, 
-            { en: "disease", ru: "болезнь", hint: "An illness that affects a person, animal, or plant." },
-            { en: "duty", ru: "обязанность", hint: "Synonym: Obligation, responsibility. Something you must do." }, 
-            { en: "earth", ru: "земля", hint: "The third planet from the sun; soil." },
-            { en: "east", ru: "восток", hint: "Antonym: West. The direction where the sun rises." }, 
-            { en: "employee", ru: "сотрудник", hint: "Antonym: Employer. A person hired to work." }, 
-            { en: "energy", ru: "энергия", hint: "The ability to do work; strength and vitality." }, 
-            { en: "enjoy", ru: "наслаждаться", hint: "Antonym: Hate. To take pleasure in something." },
-            { en: "environment", ru: "окружающая среда", hint: "The natural world around us." }, 
-            { en: "evaporate", ru: "испаряться", hint: "To turn from liquid into vapor (like water disappearing)." }, 
-            { en: "expensive", ru: "дорогой", hint: "Antonym: Cheap. Costing a lot of money." },
-            { en: "famous", ru: "известный", hint: "Synonym: Well-known, celebrated. Recognized by many people." }, 
-            { en: "farmer", ru: "фермер", hint: "A person who owns or manages a farm, growing crops." }, 
-            { en: "feather", ru: "перо", hint: "The light, flat outer covering of a bird." },
-            { en: "feed", ru: "кормить", hint: "To give food to a person or animal." }, 
-            { en: "festival", ru: "фестиваль", hint: "A period of celebration, often with music and dancing." }, 
-            { en: "flexible", ru: "гибкий", hint: "Antonym: Rigid. Able to bend easily." },
-            { en: "forest", ru: "лес", hint: "A large area covered mainly with trees." },
-            { en: "freeze", ru: "замораживать", hint: "To turn from a liquid into a solid by cold (ice)." }, 
-            { en: "future", ru: "будущее", hint: "Antonym: Past. The time that will happen after the present." },
-            { en: "get", ru: "получать", hint: "Synonym: Obtain, receive. To come into possession of something." }, 
-            { en: "gift", ru: "подарок", hint: "Synonym: Present. Something given to someone." },
-            { en: "goal", ru: "цель", hint: "Synonym: Aim, objective. The object of a person's effort." }, 
-            { en: "government", ru: "правительство", hint: "The ruling authority of a country." }, 
-            { en: "grass", ru: "трава", hint: "A green, blade-like plant covering lawns or fields." },
-            { en: "grow", ru: "расти", hint: "Synonym: Increase, enlarge. To develop in size." },
-            { en: "hard", ru: "трудный", hint: "Synonym: Solid, difficult. Requiring much effort." }, 
-            { en: "health", ru: "здоровье", hint: "The state of being free from illness." }, 
-            { en: "heavy", ru: "тяжелый", hint: "Antonym: Light. Of great weight." },
-            { en: "history", ru: "история", hint: "The study of past events." },
-            { en: "hunter", ru: "охотник", hint: "A person who tracks and kills wild animals." }, 
-            { en: "ice", ru: "лед", hint: "Frozen water." },
-            { en: "idea", ru: "идея", hint: "Synonym: Thought, concept. A plan or suggestion." }, 
-            { en: "increase", ru: "увеличивать", hint: "Antonym: Decrease, reduce. To make greater in size or amount." }, 
-            { en: "injury", ru: "травма", hint: "Physical harm or damage to a body." }, 
-            { en: "instrument", ru: "инструмент", hint: "A tool or a musical device (like a guitar)." }, 
-            { en: "invention", ru: "изобретение", hint: "A new process or device that has been created." }, 
-            { en: "island", ru: "остров", hint: "A piece of land surrounded by water." }, 
-            { en: "jewelry", ru: "ювелирные изделия", hint: "Personal ornaments like rings and necklaces." }, 
-            { en: "kill", ru: "убивать", hint: "To cause the death of a person or animal." },
-            { en: "kind", ru: "добрый", hint: "Antonym: Cruel, mean. Having a friendly and generous nature." }, 
-            { en: "lake", ru: "озеро", hint: "A large body of water surrounded by land." },
-            { en: "laugh", ru: "смеяться", hint: "Antonym: Cry. To make sounds expressing amusement." }, 
-            { en: "leader", ru: "лидер", hint: "The person who guides or commands a group." },
-            { en: "leave", ru: "уходить", hint: "Antonym: Arrive, stay. To go away from a place." }, 
-            { en: "less", ru: "меньше", hint: "Antonym: More. A smaller amount of." }, 
-            { en: "lose", ru: "терять", hint: "Antonym: Find, win. To be deprived of or cease to have." },
-            { en: "luck", ru: "удача", hint: "Synonym: Fortune, fate. Success brought by chance." },
-            { en: "machine", ru: "машина", hint: "An apparatus using mechanical power (e.g., a vehicle)." }, 
-            { en: "mammal", ru: "млекопитающее", hint: "A warm-blooded animal with hair or fur (e.g., a dog)." },
-            { en: "map", ru: "карта", hint: "A diagrammatic representation of an area of land or sea." }, 
-            { en: "medicine", ru: "медицина", hint: "The science of treating and preventing disease." },
-            { en: "middle", ru: "середина", hint: "The central point." }, 
-            { en: "modern", ru: "современный", hint: "Antonym: Ancient, old. Relating to the present time." },
-            { en: "mountain", ru: "гора", hint: "A very large, natural elevation of the Earth's surface." }, 
-            { en: "move", ru: "двигаться", hint: "Synonym: Shift, relocate. To change place or position." }, 
-            { en: "museum", ru: "музей", hint: "A building that houses and displays historical or artistic objects." }, 
-            { en: "music", ru: "музыка", hint: "Vocal or instrumental sounds producing harmony." },
-            { en: "nervous", ru: "нервный", hint: "Synonym: Anxious, worried. Easily agitated." },
-            { en: "noise", ru: "шум", hint: "Antonym: Silence. A sound, especially a loud or unpleasant one." }, 
-            { en: "ocean", ru: "океан", hint: "A very large expanse of sea." }, 
-            { en: "ordinary", ru: "обычный", hint: "Antonym: Special, unique. Normal or common." }, 
-            { en: "organize", ru: "организовать", hint: "To arrange or put into an ordered structure." },
-            { en: "over", ru: "над", hint: "Synonym: Above, higher than. (Preposition)" },
-            { en: "pay", ru: "платить", hint: "To give money for goods or services." }, 
-            { en: "peaceful", ru: "мирный", hint: "Antonym: Violent, chaotic. Free from disturbance." },
-            { en: "perhaps", ru: "возможно", hint: "Synonym: Maybe, possibly. Used to express uncertainty." },
-            { en: "plant", ru: "растение", hint: "A living organism like a tree, flower, or grass." }, 
-            { en: "poisonous", ru: "ядовитый", hint: "Synonym: Toxic, venomous. Capable of causing harm if consumed." }, 
-            { en: "popular", ru: "популярный", hint: "Synonym: Loved, widespread. Liked by many people." }, 
-            { en: "practice", ru: "практика", hint: "To perform an activity repeatedly to improve." }, 
-            { en: "prepare", ru: "готовить", hint: "To make something ready for use." }, 
-            { en: "private", ru: "частный", hint: "Antonym: Public. Belonging to one specific person or group." }, 
-            { en: "problem", ru: "проблема", hint: "Synonym: Issue, difficulty. A harmful situation needing to be dealt with." },
-            { en: "protect", ru: "защищать", hint: "Synonym: Guard, shelter. To keep safe from harm." },
-            { en: "quickly", ru: "быстро", hint: "Antonym: Slowly. With great speed." }, 
-            { en: "raise", ru: "поднимать", hint: "Antonym: Lower, drop. To lift to a higher position." }, 
-            { en: "reach", ru: "достигать", hint: "To arrive at or get as far as a destination." }, 
-            { en: "relax", ru: "расслабляться", hint: "Antonym: Stress, worry. To become less tense or anxious." }, 
-            { en: "religion", ru: "религия", hint: "A system of faith and worship." }, 
-            { en: "rice", ru: "рис", hint: "A cereal grain, widely cultivated in warm climates." },
-            { en: "rule", ru: "правило", hint: "A regulation or principle that governs conduct." },
-            { en: "safe", ru: "безопасный", hint: "Antonym: Dangerous, risky. Protected from harm." }, 
-            { en: "salary", ru: "зарплата", hint: "Fixed regular payment made to an employee." }, 
-            { en: "save", ru: "сохранять", hint: "Synonym: Keep, store. To prevent from being harmed or lost." }, 
-            { en: "scientist", ru: "ученый", hint: "An expert in a natural or physical science." },
-            { en: "share", ru: "делиться", hint: "To give a portion of something to others." },
-            { en: "shiny", ru: "блестящий", hint: "Synonym: Glossy, bright. Reflecting light." }, 
-            { en: "show", ru: "показывать", hint: "To allow or cause something to be visible." }, 
-            { en: "silver", ru: "серебро", hint: "A valuable, shiny, gray-white metal." },
-            { en: "size", ru: "размер", hint: "The relative extent or magnitude of something." }, 
-            { en: "skin", ru: "кожа", hint: "The thin outer layer of tissue covering the body." },
-            { en: "smell", ru: "запах", hint: "The faculty of perceiving odors." }, 
-            { en: "snow", ru: "снег", hint: "Frozen atmospheric water vapor falling in flakes." },
-            { en: "soft", ru: "мягкий", hint: "Antonym: Hard, firm. Easy to mold or compress." }, 
-            { en: "soil", ru: "почва", hint: "The upper layer of the Earth in which plants grow." },
-            { en: "soon", ru: "скоро", hint: "Antonym: Later. In a short time." }, 
-            { en: "sound", ru: "звук", hint: "Vibrations that travel through the air." },
-            { en: "south", ru: "юг", hint: "Antonym: North. One of the four cardinal directions." }, 
-            { en: "special", ru: "специальный", hint: "Antonym: Ordinary, general. Different from what is usual." },
-            { en: "spend", ru: "тратить", hint: "To devote time or money to a particular purpose." }, 
-            { en: "star", ru: "звезда", hint: "A large ball of gas in space that gives off light." }, 
-            { en: "stay", ru: "оставаться", hint: "Synonym: Remain, wait. To continue in the same place." }, 
-            { en: "stone", ru: "камень", hint: "A piece of rock." }, 
-            { en: "store", ru: "магазин", hint: "An establishment selling goods." },
-            { en: "strange", ru: "странный", hint: "Synonym: Unusual, odd. Difficult to understand or explain." }, 
-            { en: "suddenly", ru: "внезапно", hint: "Synonym: Unexpectedly, quickly. All at once." }, 
-            { en: "supply", ru: "снабжение", hint: "A stock of a resource." }, 
-            { en: "sweet", ru: "сладкий", hint: "Antonym: Sour, bitter. Having the taste of sugar or honey." }, 
-            { en: "swim", ru: "плавать", hint: "To propel the body through water." },
-            { en: "tail", ru: "хвост", hint: "The hindmost part of an animal." }, 
-            { en: "team", ru: "команда", hint: "A group of people working together." },
-            { en: "thick", ru: "толстый", hint: "Antonym: Thin. Having a large distance between two sides." }, 
-            { en: "together", ru: "вместе", hint: "Antonym: Separately. With another person or thing." }, 
-            { en: "traditional", ru: "традиционный", hint: "Existing as part of a long-established custom." }, 
-            { en: "travel", ru: "путешествовать", hint: "To go on a journey." },
-            { en: "trip", ru: "поездка", hint: "Synonym: Journey, excursion. An act of going to a place and returning." }, 
-            { en: "truck", ru: "грузовик", hint: "A large road vehicle for carrying goods." },
-            { en: "unfortunate", ru: "к сожалению", hint: "Synonym: Regrettably, sadly. By bad luck." }, 
-            { en: "uniform", ru: "униформа", hint: "Special clothing worn by members of the same organization." },
-            { en: "vacation", ru: "отпуск", hint: "Synonym: Holiday, time off. An extended period of recreation." },
-            { en: "violin", ru: "скрипка", hint: "A stringed musical instrument played with a bow." }, 
-            { en: "visit", ru: "посещать", hint: "Synonym: Go to, drop in on. To go to see a person or place." },
-            { en: "war", ru: "война", hint: "Antonym: Peace. A state of armed conflict." }, 
-            { en: "warm", ru: "теплый", hint: "Antonym: Cold. Having a moderate degree of heat." },
-            { en: "wide", ru: "широкий", hint: "Antonym: Narrow. Of great extent from side to side." }, 
-            { en: "wild", ru: "дикий", hint: "Antonym: Tame, domestic. Living in a natural, unrestrained state." }, 
-            { en: "win", ru: "побеждать", hint: "Antonym: Lose. To be victorious in a contest." },
-            { en: "wonderful", ru: "чудесный", hint: "Synonym: Fantastic, excellent. Extremely good." }, 
-            { en: "wood", ru: "дерево", hint: "The hard fibrous material from a tree." },
-        ];
-        
-        const correctFeedback = [
-            "Brilliant! 🤩", "Perfect match!", "You got it! 🎯", "Excellent work!", "Spot on! ✅"
-        ];
+        // БАЗА ДАННЫХ (45 вопросов) - Оптимизирована
+        const QUESTIONS = {
+            junior: [
+                {q: "Размах ряда — это разница между Max и чем?", a: ["Медианой", "Минимумом", "Средним"], c: 1},
+                {q: "Чему равна вероятность невозможного события?", a: ["1", "0", "0.5"], c: 1},
+                {q: "Среднее арифметическое чисел 10 и 20:", a: ["15", "10", "30"], c: 0},
+                {q: "Вероятность выпадения «решки»:", a: ["0.1", "0.5", "1"], c: 1},
+                {q: "Событие, которое случится обязательно:", a: ["Случайное", "Достоверное", "Невозможное"], c: 1},
+                {q: "Медиана ряда 1, 3, 5:", a: ["1", "3", "5"], c: 1},
+                {q: "Сколько исходов при броске одной монеты?", a: ["1", "2", "4"], c: 1},
+                {q: "Самое частое число в наборе данных — это:", a: ["Медиана", "Среднее", "Мода"], c: 2},
+                {q: "Что такое P в формуле вероятности?", a: ["Power", "Probability", "Point"], c: 1},
+                {q: "Вероятность выпадения числа 5 на кубике:", a: ["1/6", "1/2", "1/5"], c: 0},
+                {q: "Какое число не может быть вероятностью?", a: ["0.5", "1.5", "0"], c: 1},
+                {q: "Размах чисел 0, 5, 10 равен:", a: ["5", "10", "0"], c: 1},
+                {q: "Если из 10 шаров 3 красных, вероятность вынуть красный:", a: ["0.3", "0.7", "3"], c: 0},
+                {q: "Как называется наука о сборе и анализе данных?", a: ["Алгебра", "Статистика", "Геометрия"], c: 1},
+                {q: "Среднее ряда 5, 5, 5:", a: ["0", "5", "15"], c: 1}
+            ],
+            middle: [
+                {q: "Чему равно 4! ?", a: ["12", "16", "24"], c: 2},
+                {q: "IQR (межквартильный размах) — это Q3 минус:", a: ["Q1", "Среднее", "Медиана"], c: 0},
+                {q: "В чем измеряется дисперсия?", a: ["В исходных единицах", "В квадратах единиц", "В процентах"], c: 1},
+                {q: "Чему равно 0! ?", a: ["0", "1", "Ошибка"], c: 1},
+                {q: "Нижний квартиль (Q1) отсекает...", a: ["25% данных", "50% данных", "75% данных"], c: 0},
+                {q: "Корень из дисперсии — это:", a: ["Размах", "Стандартное отклонение", "Медиана"], c: 1},
+                {q: "Если порядок важен, мы используем:", a: ["Сочетания", "Размещения", "Сумму"], c: 1},
+                {q: "В «ящике с усами» линия внутри ящика — это:", a: ["Среднее", "Медиана", "Мода"], c: 1},
+                {q: "Сколько способов расставить 3 книги на полке?", a: ["3", "6", "9"], c: 1},
+                {q: "IQR охватывает сколько процентов данных?", a: ["25%", "50%", "100%"], c: 1},
+                {q: "Размах чисел -5 и 5 равен:", a: ["0", "5", "10"], c: 2},
+                {q: "Если все числа в ряду одинаковы, дисперсия равна:", a: ["0", "1", "Среднему"], c: 0},
+                {q: "Медиана ряда 2, 4, 6, 8:", a: ["4", "5", "6"], c: 1},
+                {q: "Какая мера разброса чувствительна к выбросам?", a: ["Медиана", "Размах", "IQR"], c: 1},
+                {q: "P(A) = 0.4. Чему равна вероятность того, что А НЕ произойдет?", a: ["0.4", "0.6", "0.5"], c: 1}
+            ],
+            senior: [
+                {q: "Если все данные умножить на 2, станд. отклонение (σ):", a: ["Не изменится", "Увеличится в 2 раза", "Увеличится в 4 раза"], c: 1},
+                {q: "Вероятность пересечения независимых событий P(A ∩ B):", a: ["P(A) + P(B)", "P(A) * P(B)", "P(A) / P(B)"], c: 1},
+                {q: "Если дисперсия 0.16, чему равно σ?", a: ["0.04", "0.4", "0.8"], c: 1},
+                {q: "При сильных выбросах лучше всего использовать:", a: ["Среднее", "Медиану", "Размах"], c: 1},
+                {q: "Если ко всем числам прибавить 50, дисперсия:", a: ["Увеличится", "Уменьшится", "Не изменится"], c: 2},
+                {q: "Коэффициент вариации — это σ деленное на:", a: ["Размах", "Среднее арифметическое", "Дисперсию"], c: 1},
+                {q: "Число сочетаний из 4 по 2 равно:", a: ["6", "12", "4"], c: 0},
+                {q: "Для несовместных событий вероятность суммы P(A+B) равна:", a: ["P(A)*P(B)", "P(A)+P(B)", "1"], c: 1},
+                {q: "В симметричном распределении:", a: ["Mean > Median", "Mean = Median", "Mean < Median"], c: 1},
+                {q: "Верхний квартиль (Q3) — это какой процентиль?", a: ["25%", "50%", "75%"], c: 2},
+                {q: "Правило «трех сигм» для нормального распределения — это:", a: ["95%", "99.7%", "68%"], c: 1},
+                {q: "При броске двух кубиков вероятность суммы 2:", a: ["1/6", "1/12", "1/36"], c: 2},
+                {q: "Факториал 5! равен:", a: ["60", "120", "100"], c: 1},
+                {q: "Дисперсия — это среднее квадратов минус:", a: ["Среднее", "Квадрат среднего", "Размах"], c: 1},
+                {q: "Z-оценка показывает расстояние от среднего в единицах:", a: ["Процентов", "Стандартных отклонений", "Размаха"], c: 1}
+            ]
+        };
 
-        const incorrectFeedback = [
-            "Oops, keep trying! 🤔", "Not quite, review this!", "A small mistake. Remember the translation!", "Incorrect. Time to learn something new!", "Close, but no cigar. 🚬"
-        ];
-
-
-        // --- Game State Variables ---
-        let currentWordIndex = -1;
+        let currentQ = [];
+        let curIdx = 0;
         let score = 0;
-        let allWords = [...wordList];
-        let mistakes = []; // Array to store {en: 'word', ru: 'translation', hint: '...'} pairs for review
-        let hintUsed = false;
+        let log = [];
 
-        // --- DOM Elements ---
-        const wordDisplay = document.getElementById('word-display');
-        const optionsContainer = document.getElementById('options-container');
-        const feedbackMessage = document.getElementById('feedback-message');
-        const nextButton = document.getElementById('next-button');
-        const reviewButton = document.getElementById('review-button');
-        const scoreDisplay = document.getElementById('current-score');
-        const hintButton = document.getElementById('hint-button');
-        const hintDisplay = document.getElementById('hint-display');
-        const reviewSection = document.getElementById('review-section');
-        const mistakeList = document.getElementById('mistake-list');
-
-        // --- Utility Function ---
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        // --- Game Core Functions ---
-
-        function startGame() {
-            // Shuffle the word list once for the game
-            allWords = shuffleArray(wordList);
-            currentWordIndex = -1;
-            score = 0;
-            // Note: Mistakes array is NOT cleared on StartGame to allow cumulative review
-            scoreDisplay.textContent = score;
-            reviewSection.style.display = 'none';
-            loadNextQuestion();
-        }
-
-        function loadNextQuestion() {
-            currentWordIndex++;
-            hintUsed = false;
-            reviewSection.style.display = 'none'; // Hide review section when starting new question
-            
-            if (currentWordIndex >= allWords.length) {
-                // End Game
-                wordDisplay.textContent = "Quiz Finished!";
-                feedbackMessage.textContent = `Final Score: ${score} out of ${allWords.length}! You crushed it! 🎉`;
-                optionsContainer.innerHTML = '<button id="restart-button" class="control-btn" style="background-color: #2ecc71; box-shadow: 0 4px 0 #27ae60;">Start New Game</button>';
-                optionsContainer.querySelector('#restart-button').addEventListener('click', startGame);
-                nextButton.style.display = 'none';
-                
-                // Show review button if mistakes were made
-                reviewButton.style.display = mistakes.length > 0 ? 'inline-block' : 'none';
-                hintButton.style.display = 'none';
-                hintDisplay.style.display = 'none';
+        function startGame(lvl) {
+            const name = document.getElementById('userName').value.trim();
+            if (!name) {
+                const input = document.getElementById('userName');
+                input.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => input.classList.remove('animate__shakeX'), 500);
                 return;
             }
 
-            const currentWord = allWords[currentWordIndex];
-            wordDisplay.textContent = currentWord.en;
-            feedbackMessage.textContent = 'Choose the correct Russian translation.';
-            feedbackMessage.className = '';
-            
-            // Reset hint display
-            hintButton.style.display = 'inline-block';
-            hintButton.disabled = false;
-            hintDisplay.textContent = '';
-            hintDisplay.style.display = 'none';
-            
-            nextButton.style.display = 'none';
-            reviewButton.style.display = mistakes.length > 0 ? 'inline-block' : 'none';
+            // Сброс состояния
+            curIdx = 0;
+            score = 0;
+            log = [];
+            currentQ = [...QUESTIONS[lvl]].sort(() => 0.5 - Math.random());
 
-            optionsContainer.innerHTML = '';
+            // Переход
+            switchScreen('scr-start', 'scr-game');
+            document.getElementById('lvl-display').innerText = lvl.toUpperCase();
+            renderQuestion();
+        }
 
-            // 1. Get the correct translation
-            const correctTranslation = currentWord.ru;
-            let options = [correctTranslation];
+        function switchScreen(outId, inId) {
+            const outEl = document.getElementById(outId);
+            const inEl = document.getElementById(inId);
+            outEl.classList.add('animate__animated', 'animate__fadeOut');
+            setTimeout(() => {
+                outEl.classList.add('hidden');
+                outEl.classList.remove('animate__animated', 'animate__fadeOut');
+                inEl.classList.remove('hidden');
+                inEl.classList.add('animate__animated', 'animate__fadeIn');
+            }, 400);
+        }
 
-            // 2. Create a pool of all unique wrong translations
-            const allTranslations = wordList.map(item => item.ru);
-            const wrongTranslationPool = allTranslations.filter(ru => ru !== correctTranslation);
+        function renderQuestion() {
+            const q = currentQ[curIdx];
+            document.getElementById('q-step').innerText = `Вопрос ${curIdx + 1} / 15`;
+            document.getElementById('question-text').innerText = q.q;
             
-            // 3. Shuffle the wrong pool and pick 3 unique distractors
-            shuffleArray(wrongTranslationPool);
+            const box = document.getElementById('options-box');
+            box.innerHTML = '';
             
-            // Get 3 unique wrong options (or fewer if the list is small)
-            const wrongOptions = wrongTranslationPool.slice(0, 3);
-            options = options.concat(wrongOptions);
-            
-            // 4. Shuffle the final four options (1 correct, 3 wrong)
-            options = shuffleArray(options);
+            q.a.forEach((text, i) => {
+                const b = document.createElement('button');
+                b.className = 'opt-btn animate__animated animate__fadeInUp';
+                b.style.animationDelay = (i * 0.05) + 's';
+                b.innerText = text;
+                b.onclick = () => check(i);
+                box.appendChild(b);
+            });
 
-            // Render buttons
-            options.forEach(option => {
-                const button = document.createElement('button');
-                button.classList.add('option-button');
-                button.textContent = option;
-                button.setAttribute('data-translation', option);
-                button.addEventListener('click', handleAnswer);
-                optionsContainer.appendChild(button);
+            document.getElementById('bar').style.width = (curIdx / 15 * 100) + '%';
+        }
+
+        function check(idx) {
+            const q = currentQ[curIdx];
+            const correct = (idx === q.c);
+            if (correct) score++;
+            
+            log.push({
+                q: q.q,
+                ua: q.a[idx],
+                ca: q.a[q.c],
+                ok: correct
+            });
+
+            curIdx++;
+            if (curIdx < 15) {
+                renderQuestion();
+            } else {
+                showFinal();
+            }
+        }
+
+        function showFinal() {
+            switchScreen('scr-game', 'scr-end');
+            const name = document.getElementById('userName').value;
+            document.getElementById('score-heading').innerText = `${name}: ${score} / 15`;
+            
+            const list = document.getElementById('review-list');
+            list.innerHTML = '';
+            
+            log.forEach(item => {
+                const d = document.createElement('div');
+                d.className = `rev-card ${item.ok ? 'is-ok' : ''}`;
+                d.innerHTML = `<strong>${item.q}</strong><br>
+                ${item.ok ? `✅ ${item.ca}` : `❌ ${item.ua} <br> <span style="color:var(--junior)">✔️ Верно: ${item.ca}</span>`}`;
+                list.appendChild(d);
             });
         }
-
-        function handleAnswer(event) {
-            if (nextButton.style.display === 'inline-block') return; // Prevent double clicking
-            
-            const selectedButton = event.target;
-            const selectedTranslation = selectedButton.getAttribute('data-translation');
-            const currentWord = allWords[currentWordIndex];
-            const correctTranslation = currentWord.ru;
-            let isCorrect = (selectedTranslation === correctTranslation);
-
-            // Disable all buttons after choice
-            document.querySelectorAll('.option-button').forEach(btn => btn.disabled = true);
-            hintButton.disabled = true;
-
-            if (isCorrect) {
-                // Don't increase score if hint was used
-                if (!hintUsed) {
-                    score++;
-                    scoreDisplay.textContent = score;
-                }
-                feedbackMessage.textContent = correctFeedback[Math.floor(Math.random() * correctFeedback.length)];
-                feedbackMessage.className = 'correct';
-                selectedButton.classList.add('correct-highlight');
-
-            } else {
-                // Removed ** from the message
-                feedbackMessage.textContent = incorrectFeedback[Math.floor(Math.random() * incorrectFeedback.length)] + ` (Correct: ${correctTranslation})`;
-                feedbackMessage.className = 'incorrect';
-                
-                // Track mistake only if it wasn't already tracked in this session
-                if (mistakes.findIndex(m => m.en === currentWord.en) === -1) {
-                    mistakes.push(currentWord);
-                }
-
-                // Red for wrong guess
-                selectedButton.style.backgroundColor = '#e74c3c'; 
-                selectedButton.style.boxShadow = '0 4px 0 #c0392b';
-                
-                // Highlight the correct answer
-                document.querySelectorAll('.option-button').forEach(btn => {
-                    if (btn.getAttribute('data-translation') === correctTranslation) {
-                        btn.classList.add('correct-highlight');
-                    }
-                });
-            }
-
-            nextButton.style.display = 'inline-block';
-            reviewButton.style.display = mistakes.length > 0 ? 'inline-block' : 'none';
-        }
-
-        function showHint() {
-            const currentWord = allWords[currentWordIndex];
-            const hint = currentWord.hint || "No specific synonym/antonym hint available.";
-            
-            // Removed ** from the hint display
-            hintDisplay.innerHTML = `Подсказка: ${hint}`;
-            hintDisplay.style.display = 'block';
-            hintButton.disabled = true;
-            hintUsed = true; // Mark hint as used for this question (prevents score from increasing)
-        }
-        
-        function showMistakes() {
-            if (reviewSection.style.display === 'block') {
-                reviewSection.style.display = 'none';
-                return;
-            }
-
-            mistakeList.innerHTML = ''; // Clear previous list
-            
-            if (mistakes.length === 0) {
-                mistakeList.innerHTML = '<li>🎉 Поздравляем! Вы прошли этот раунд без ошибок!</li>';
-            } else {
-                mistakes.forEach((mistake, index) => {
-                    const listItem = document.createElement('li');
-                    // Removed ** from the mistake list item
-                    listItem.innerHTML = `<span class="mistake-en">${mistake.en}</span> &rarr; <span class="correct-translation">${mistake.ru}</span>
-                                          <span class="review-info">(${mistake.hint})</span>`;
-                    mistakeList.appendChild(listItem);
-                });
-            }
-            reviewSection.style.display = 'block';
-            
-            // Scroll down to the review section for visibility
-            reviewSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-
-        // --- Event Listeners ---
-        nextButton.addEventListener('click', loadNextQuestion);
-        hintButton.addEventListener('click', showHint);
-        reviewButton.addEventListener('click', showMistakes);
-
-        // --- Initialize Game ---
-        startGame();
-
     </script>
 </body>
 </html>
