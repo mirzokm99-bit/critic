@@ -2,266 +2,375 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Статистический Олимп - Final Stable</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Эконометрика: Итоговый Тест</title>
     <style>
         :root {
-            --primary: #00d2ff;
-            --junior: #00b894;
-            --middle: #fdcb6e;
-            --senior: #d63031;
-            --bg: #0b0e14;
-            --glass: rgba(255, 255, 255, 0.08);
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f9f9f9;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: radial-gradient(circle at top right, #1e1e2f, #0b0e14);
-            color: white;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: #eef2f7;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden; /* Предотвращает дергание при анимациях */
         }
 
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 24px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        #quiz-card {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             position: relative;
-            z-index: 1;
+            overflow: hidden;
         }
 
-        .hidden { display: none !important; }
-
-        h1 { text-align: center; margin-bottom: 10px; background: linear-gradient(45deg, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2rem; }
-
-        .level-select { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-
-        .lvl-btn {
-            padding: 18px; border-radius: 12px; border: 2px solid transparent;
-            cursor: pointer; color: white; font-weight: 700; transition: all 0.2s ease;
-            text-align: center; background: rgba(255,255,255,0.05);
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .lvl-btn.jnr:hover { border-color: var(--junior); background: rgba(0, 184, 148, 0.1); }
-        .lvl-btn.mid:hover { border-color: var(--middle); background: rgba(253, 203, 110, 0.1); }
-        .lvl-btn.snr:hover { border-color: var(--senior); background: rgba(214, 48, 49, 0.1); }
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
 
-        input {
-            width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #333;
-            background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px; box-sizing: border-box;
-            outline: none; font-size: 1rem;
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin-bottom: 30px;
         }
 
-        .opt-btn {
-            width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white;
-            text-align: left; cursor: pointer; transition: 0.2s; font-size: 1rem;
+        #progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
         }
-        .opt-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); transform: translateX(5px); }
 
-        .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 20px 0; }
-        .progress-fill { height: 100%; background: var(--primary); width: 0%; border-radius: 10px; transition: 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
 
-        #review-list { max-height: 380px; overflow-y: auto; margin-top: 15px; padding-right: 8px; }
-        .rev-card { padding: 12px; border-radius: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.2); border-left: 4px solid var(--senior); }
-        .rev-card.is-ok { border-left-color: var(--junior); }
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        .options-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 18px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background-color: #f0f7ff;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white;
+        }
+
+        /* Results & Review */
+        #results, #review-mode { display: none; text-align: center; }
+
+        .review-item {
+            text-align: left;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .status-tag {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .tag-correct { background: #d4edda; color: #155724; }
+        .tag-wrong { background: #f8d7da; color: #721c24; }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-main { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <div id="scr-start" class="card animate__animated animate__zoomIn">
-        <h1>STAT-OLYMPUS</h1>
-        <p style="text-align: center; opacity: 0.7; font-size: 0.9rem;">Проверьте свои знания статистики</p>
-        <input type="text" id="userName" placeholder="Введите ваш никнейм..." maxlength="15">
-        <div class="level-select">
-            <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: -5px;">Выберите сложность:</div>
-            <button class="lvl-btn jnr" onclick="startGame('junior')">JUNIOR (Легко)</button>
-            <button class="lvl-btn mid" onclick="startGame('middle')">MIDDLE (Средне)</button>
-            <button class="lvl-btn snr" onclick="startGame('senior')">SENIOR (Сложно)</button>
+<div id="quiz-card">
+    <div id="game-ui">
+        <div class="q-header">
+            <span id="q-count">Вопрос 1/100</span>
+            <span id="score-display">Баллы: 0</span>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="question-content" class="fade-in">
+            <div class="question-text" id="q-text">Текст вопроса загружается...</div>
+            <div class="options-grid" id="options-box"></div>
         </div>
     </div>
 
-    <div id="scr-game" class="card hidden">
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
-            <span id="q-step">1 / 15</span>
-            <span id="lvl-display" style="font-weight: bold; color: var(--primary);"></span>
-        </div>
-        <div class="progress-bar"><div id="bar" class="progress-fill"></div></div>
-        <h2 id="question-text" style="min-height: 70px; font-size: 1.2rem; line-height: 1.4;"></h2>
-        <div id="options-box"></div>
+    <div id="results">
+        <h1>Тест завершен!</h1>
+        <p style="font-size: 2rem;" id="final-score">0 / 100</p>
+        <div id="performance-msg"></div>
+        <button class="btn btn-main" onclick="startReview()">Посмотреть ошибки</button>
+        <button class="btn btn-outline" onclick="location.reload()">Начать заново</button>
     </div>
 
-    <div id="scr-end" class="card hidden">
-        <h1 id="score-heading"></h1>
+    <div id="review-mode">
+        <h2>Разбор ответов</h2>
         <div id="review-list"></div>
-        <button class="lvl-btn" style="width:100%; margin-top:15px; background: var(--primary); border:none;" onclick="location.reload()">ВЕРНУТЬСЯ В МЕНЮ</button>
+        <button class="btn btn-main" onclick="location.reload()">Вернуться в начало</button>
     </div>
+</div>
 
-    <script>
-        // БАЗА ДАННЫХ (45 вопросов) - Оптимизирована
-        const QUESTIONS = {
-            junior: [
-                {q: "Размах ряда — это разница между Max и чем?", a: ["Медианой", "Минимумом", "Средним"], c: 1},
-                {q: "Чему равна вероятность невозможного события?", a: ["1", "0", "0.5"], c: 1},
-                {q: "Среднее арифметическое чисел 10 и 20:", a: ["15", "10", "30"], c: 0},
-                {q: "Вероятность выпадения «решки»:", a: ["0.1", "0.5", "1"], c: 1},
-                {q: "Событие, которое случится обязательно:", a: ["Случайное", "Достоверное", "Невозможное"], c: 1},
-                {q: "Медиана ряда 1, 3, 5:", a: ["1", "3", "5"], c: 1},
-                {q: "Сколько исходов при броске одной монеты?", a: ["1", "2", "4"], c: 1},
-                {q: "Самое частое число в наборе данных — это:", a: ["Медиана", "Среднее", "Мода"], c: 2},
-                {q: "Что такое P в формуле вероятности?", a: ["Power", "Probability", "Point"], c: 1},
-                {q: "Вероятность выпадения числа 5 на кубике:", a: ["1/6", "1/2", "1/5"], c: 0},
-                {q: "Какое число не может быть вероятностью?", a: ["0.5", "1.5", "0"], c: 1},
-                {q: "Размах чисел 0, 5, 10 равен:", a: ["5", "10", "0"], c: 1},
-                {q: "Если из 10 шаров 3 красных, вероятность вынуть красный:", a: ["0.3", "0.7", "3"], c: 0},
-                {q: "Как называется наука о сборе и анализе данных?", a: ["Алгебра", "Статистика", "Геометрия"], c: 1},
-                {q: "Среднее ряда 5, 5, 5:", a: ["0", "5", "15"], c: 1}
-            ],
-            middle: [
-                {q: "Чему равно 4! ?", a: ["12", "16", "24"], c: 2},
-                {q: "IQR (межквартильный размах) — это Q3 минус:", a: ["Q1", "Среднее", "Медиана"], c: 0},
-                {q: "В чем измеряется дисперсия?", a: ["В исходных единицах", "В квадратах единиц", "В процентах"], c: 1},
-                {q: "Чему равно 0! ?", a: ["0", "1", "Ошибка"], c: 1},
-                {q: "Нижний квартиль (Q1) отсекает...", a: ["25% данных", "50% данных", "75% данных"], c: 0},
-                {q: "Корень из дисперсии — это:", a: ["Размах", "Стандартное отклонение", "Медиана"], c: 1},
-                {q: "Если порядок важен, мы используем:", a: ["Сочетания", "Размещения", "Сумму"], c: 1},
-                {q: "В «ящике с усами» линия внутри ящика — это:", a: ["Среднее", "Медиана", "Мода"], c: 1},
-                {q: "Сколько способов расставить 3 книги на полке?", a: ["3", "6", "9"], c: 1},
-                {q: "IQR охватывает сколько процентов данных?", a: ["25%", "50%", "100%"], c: 1},
-                {q: "Размах чисел -5 и 5 равен:", a: ["0", "5", "10"], c: 2},
-                {q: "Если все числа в ряду одинаковы, дисперсия равна:", a: ["0", "1", "Среднему"], c: 0},
-                {q: "Медиана ряда 2, 4, 6, 8:", a: ["4", "5", "6"], c: 1},
-                {q: "Какая мера разброса чувствительна к выбросам?", a: ["Медиана", "Размах", "IQR"], c: 1},
-                {q: "P(A) = 0.4. Чему равна вероятность того, что А НЕ произойдет?", a: ["0.4", "0.6", "0.5"], c: 1}
-            ],
-            senior: [
-                {q: "Если все данные умножить на 2, станд. отклонение (σ):", a: ["Не изменится", "Увеличится в 2 раза", "Увеличится в 4 раза"], c: 1},
-                {q: "Вероятность пересечения независимых событий P(A ∩ B):", a: ["P(A) + P(B)", "P(A) * P(B)", "P(A) / P(B)"], c: 1},
-                {q: "Если дисперсия 0.16, чему равно σ?", a: ["0.04", "0.4", "0.8"], c: 1},
-                {q: "При сильных выбросах лучше всего использовать:", a: ["Среднее", "Медиану", "Размах"], c: 1},
-                {q: "Если ко всем числам прибавить 50, дисперсия:", a: ["Увеличится", "Уменьшится", "Не изменится"], c: 2},
-                {q: "Коэффициент вариации — это σ деленное на:", a: ["Размах", "Среднее арифметическое", "Дисперсию"], c: 1},
-                {q: "Число сочетаний из 4 по 2 равно:", a: ["6", "12", "4"], c: 0},
-                {q: "Для несовместных событий вероятность суммы P(A+B) равна:", a: ["P(A)*P(B)", "P(A)+P(B)", "1"], c: 1},
-                {q: "В симметричном распределении:", a: ["Mean > Median", "Mean = Median", "Mean < Median"], c: 1},
-                {q: "Верхний квартиль (Q3) — это какой процентиль?", a: ["25%", "50%", "75%"], c: 2},
-                {q: "Правило «трех сигм» для нормального распределения — это:", a: ["95%", "99.7%", "68%"], c: 1},
-                {q: "При броске двух кубиков вероятность суммы 2:", a: ["1/6", "1/12", "1/36"], c: 2},
-                {q: "Факториал 5! равен:", a: ["60", "120", "100"], c: 1},
-                {q: "Дисперсия — это среднее квадратов минус:", a: ["Среднее", "Квадрат среднего", "Размах"], c: 1},
-                {q: "Z-оценка показывает расстояние от среднего в единицах:", a: ["Процентов", "Стандартных отклонений", "Размаха"], c: 1}
-            ]
-        };
+<script>
+    const questions = [
+        { q: "Что такое эконометрика?", a: ["Применение статистических методов для анализа экономических данных", "Изучение экономики без данных", "Математическая теория игр", "Прогнозирование погоды"] },
+        { q: "Какой основной инструмент используется в эконометрике?", a: ["Статистические модели", "Графики без данных", "Только теория", "Социологические опросы"] },
+        { q: "Что изучает регрессионный анализ?", a: ["Зависимость одной переменной от других", "Только средние значения", "Распределение доходов", "Временные тренды"] },
+        { q: "Что показывает уравнение линейной регрессии?", a: ["Линейную связь между переменными", "Нелинейную связь", "Только корреляцию", "Случайные колебания"] },
+        { q: "Какой метод используется для оценки параметров регрессии?", a: ["Метод наименьших квадратов (МНК)", "Метод максимального правдоподобия", "Метод моментов", "Метод проб и ошибок"] },
+        { q: "Какой коэффициент корреляции показывает полное отсутствие связи?", a: ["0", "1", "-1", "0.5"] },
+        { q: "Что означает корреляция = -0.9?", a: ["Сильная отрицательная связь", "Слабая положительная связь", "Нет связи", "Случайная связь"] },
+        { q: "Что такое нулевая гипотеза?", a: ["Предположение об отсутствии эффекта", "Предположение о наличии эффекта", "Предположение о корреляции", "Предположение о среднем"] },
+        { q: "Что такое p-значение?", a: ["Вероятность ошибки при отвержении нулевой гипотезы", "Вероятность верной модели", "Коэффициент детерминации", "Стандартная ошибка"] },
+        { q: "Что такое временной ряд?", a: ["Данные, собранные во времени", "Данные по регионам", "Данные по людям", "Случайные данные"] },
+        { q: "Что такое регрессия?", a: ["Связь одной переменной с другими", "Только среднее", "Только график", "Только сумма"] },
+        { q: "Какая переменная — главная в регрессии?", a: ["Зависимая (Y)", "Независимая (X)", "Ошибка", "Константа"] },
+        { q: "Что такое корреляция?", a: ["Как вместе меняются две переменные", "Причина и следствие", "Среднее", "Сумма"] },
+        { q: "Если корреляция = 1, то:", a: ["Полная прямая связь", "Нет связи", "Отрицательная связь", "Случайная связь"] },
+        { q: "Что такое временной ряд?", a: ["Данные по годам", "Данные по людям", "Данные по городам", "Случайные числа"] },
+        { q: "Даны значения: 2, 4, 6, 8, 10. Чему равно среднее арифметическое?", a: ["6", "5", "7", "30"] },
+        { q: "Даны значения: 1, 3, 3, 5, 8. Чему равна медиана?", a: ["3", "4", "5", "20"] },
+        { q: "Даны значения: 7, 7, 2, 7, 1. Чему равна мода?", a: ["7", "2", "1", "Нет моды"] },
+        { q: "Даны: 10, 20, 30. Среднее арифметическое?", a: ["20", "10", "30", "60"] },
+        { q: "Даны: 5, 1, 9, 3, 7. Медиана?", a: ["5", "3", "7", "25"] },
+        { q: "Даны: 6, 6, 6, 8, 10. Мода?", a: ["6", "8", "10", "Нет моды"] },
+        { q: "Даны: 5, 10, 15, 20. Чему равна разность между максимумом и минимумом?", a: ["15", "5", "20", "50"] },
+        { q: "Даны: 100, 50. Во сколько раз 100 больше 50?", a: ["2", "50", "100", "150"] },
+        { q: "Даны: 4, 9. Чему равен квадрат 4?", a: ["16", "4", "9", "36"] },
+        { q: "Даны: 100, 25. Чему равен 25% от 100?", a: ["25", "100", "4", "75"] },
+        { q: "Даны: 16, 4. Чему равен корень из 16?", a: ["4", "16", "2", "20"] },
+        { q: "Даны: 20, 5. Сколько раз 5 помещается в 20?", a: ["4", "5", "20", "25"] },
+        { q: "Даны: 5, 7, 9. Чему равно среднее арифметическое?", a: ["7", "5", "9", "21"] },
+        { q: "Даны: 3, 5, 7, 11. Чему равна сумма простых чисел?", a: ["26", "3", "11", "21"] },
+        { q: "Даны: 16, 25, 36. Чему равен корень из суммы?", a: ["9", "77", "3", "6"] },
+        { q: "Даны: 2, 4, 6, 8, 10. Чему равна медиана?", a: ["6", "2", "10", "30"] },
+        { q: "Даны: 81, 27, 9. Чему равен корень из 81?", a: ["9", "3", "27", "81"] },
+        { q: "ВВП вырос с 100 до 110 млрд. На сколько % вырос ВВП?", a: ["10%", "1%", "100%", "110%"] },
+        { q: "Инфляция 5%, цена была 200 сум. Чему равна новая цена?", a: ["210 сум.", "205 сум.", "195 сум.", "200 сум."] },
+        { q: "Безработица 8%, трудоспособных 50 млн. Сколько безработных?", a: ["4 млн", "8 млн", "40 млн", "50 млн"] },
+        { q: "Экспорт 300 млн, импорт 250 млн. Чему равно сальдо торговли?", a: ["50 млн", "-50 млн", "550 млн", "0"] },
+        { q: "Доход 1000 сум., расходы 800 сум. Чему равны сбережения?", a: ["200 сум.", "800 сум.", "1000 сум.", "0"] },
+        { q: "Цена акции была 500 сум., стала 550 сум. На сколько % рост?", a: ["10%", "5%", "50%", "55%"] },
+        { q: "Процентная ставка 6%, вклад 10000 сум. Чему равен доход за год?", a: ["600 сум.", "6000 сум.", "10600 сум.", "0"] },
+        { q: "Продажи 1 квартал: 200, 2 квартал: 250. На сколько % рост?", a: ["25%", "20%", "50%", "5%"] },
+        { q: "Инвестиции 500 млн, прибыль 100 млн. Чему равна ROI (%)?", a: ["20%", "100%", "500%", "600%"] },
+        { q: "Население 100 млн, ВВП 10 трлн сум. ВВП на душу (сум.)?", a: ["100000 сум.", "10 млн сум.", "100 млн сум.", "1 млрд сум."] },
+        { q: "Долг 200 млрд, ВВП 1000 млрд. Долг к ВВП (%)?", a: ["20%", "2%", "200%", "1000%"] },
+        { q: "Зарплата выросла с 40000 до 48000 сум. На сколько % рост?", a: ["20%", "10%", "8000 сум.", "48000 сум."] },
+        { q: "Бюджет: доходы 500 млрд, расходы 600 млрд. Дефицит (млрд)?", a: ["100 млрд", "-100 млрд", "1100 млрд", "0"] },
+        { q: "Продано 120 единиц по 500 сум. Чему равна выручка?", a: ["60000 сум.", "120 сум.", "500 сум.", "620 сум."] },
+        { q: "Себестоимость 300 сум., цена 500 сум. Прибыль на единицу?", a: ["200 сум.", "300 сум.", "500 сум.", "800 сум."] },
+        { q: "Продали 100 единиц, прибыль 20000 сум. Прибыль на единицу?", a: ["200 сум.", "100 сум.", "20000 сум.", "0"] },
+        { q: "Кредит 100000 сум., ставка 12%, за год переплата?", a: ["12000 сум.", "10000 сум.", "112000 сум.", "0"] },
+        { q: "Вклад 200000 сум., ставка 5%, доход за год?", a: ["10000 сум.", "20000 сум.", "210000 сум.", "0"] },
+        { q: "Акция: купили за 1000 сум., продали за 1200 сум. Прибыль (%)?", a: ["20%", "10%", "200 сум.", "1200 сум."] },
+        { q: "Экспорт вырос с 400 до 480 млн. На сколько % рост?", a: ["20%", "10%", "80 млн", "480 млн"] },
+        { q: "Импорт упал с 300 до 240 млн. На сколько % снижение?", a: ["20%", "10%", "60 млн", "240 млн"] },
+        { q: "Бюджетный профицит 50 млрд, доходы 800 млрд. Расходы?", a: ["750 млрд", "850 млрд", "800 млрд", "50 млрд"] },
+        { q: "Цена 1000 сум., скидка 15%. Новая цена?", a: ["850 сум.", "1150 сум.", "150 сум.", "1000 сум."] },
+        { q: "Продажи: 1 мес. 500, 2 мес. 600. Средние продажи?", a: ["550", "500", "600", "1100"] },
+        { q: "Инвестиции 1 млн, возврат 1.2 млн. Прибыль (%)?", a: ["20%", "10%", "200000 сум.", "1.2 млн"] },
+        { q: "Долг 500 млрд, ВВП 2500 млрд. Долг к ВВП?", a: ["20%", "2%", "500%", "2500%"] },
+        { q: "Курс евро: был 80 сум., стал 88 сум. Рост (%)?", a: ["10%", "8%", "88 сум.", "80 сум."] },
+        { q: "Затраты 400 тыс., выручка 600 тыс. Прибыль?", a: ["200 тыс.", "400 тыс.", "600 тыс.", "1000 тыс."] },
+        { q: "Себестоимость 200 сум., продажа 300 сум., 150 единиц. Прибыль?", a: ["15000 сум.", "100 сум.", "300 сум.", "45000 сум."] },
+        { q: "Вклад 500000 сум., 4% годовых, доход за год?", a: ["20000 сум.", "4000 сум.", "520000 сум.", "0"] },
+        { q: "Акция упала с 2000 до 1600 сум. Убыток (%)?", a: ["20%", "10%", "400 сум.", "1600 сум."] },
+        { q: "ВВП на душу 50000 сум., население 120 млн. Общий ВВП?", a: ["6 трлн сум.", "50 трлн сум.", "120 трлн сум.", "600000 сум."] },
+        { q: "Бюджет: доходы 1000 млрд, расходы 900 млрд. Профицит?", a: ["100 млрд", "-100 млрд", "1900 млрд", "0"] },
+        { q: "Зарплата 60000 сум., премия 10%. Итого?", a: ["66000 сум.", "6000 сум.", "60000 сум.", "10 сум."] },
+        { q: "Продажи выросли с 1000 до 1300 единиц. Рост (%)?", a: ["30%", "20%", "300 ед.", "1300 ед."] },
+        { q: "Бросаем монету 1 раз. Вероятность орла?", a: ["0.5", "1", "0", "2"] },
+        { q: "Кидаем кубик. Вероятность выпадения 6?", a: ["1/6", "1/2", "0", "6"] },
+        { q: "В урне 3 красных и 2 синих шара. Вероятность вытащить красный?", a: ["3/5", "2/5", "1", "0"] },
+        { q: "Бросаем монету 2 раза. Вероятность двух орлов?", a: ["1/4", "1/2", "0", "2/4"] },
+        { q: "Кидаем кубик 2 раза. Вероятность хотя бы одной 1?", a: ["11/36", "1/6", "1/36", "2/6"] },
+        { q: "В выборке 50 человек, 20 женщин. Частота женщин?", a: ["0.4", "20", "50", "30"] },
+        { q: "Факториал: 5! = ?", a: ["120", "5", "25", "1"] },
+        { q: "Факториал: 3! = ?", a: ["6", "3", "9", "1"] },
+        { q: "Сколько перестановок из 3 букв (А, Б, В)?", a: ["6", "3", "9", "1"] },
+        { q: "Сколько способов выбрать 2 человек из 4 (порядок важен)?", a: ["12", "6", "4", "2"] },
+        { q: "Частота дождливых дней: за 30 дней дождь был 12 раз. Частота?", a: ["0.4", "12", "30", "18"] },
+        { q: "Частота успехов: из 200 попыток 60 успехов. Частота?", a: ["0.3", "60", "200", "140"] },
+        { q: "Что показывает среднее?", a: ["Типичное значение", "Максимум", "Минимум", "Разницу"] },
+        { q: "Что такое дисперсия?", a: ["Как сильно разброс", "Среднее", "Медиана", "Сумма"] },
+        { q: "Дисперсия = 0 — значит:", a: ["Все значения одинаковые", "Разные", "Среднее = 0", "Медиана = 0"] },
+        { q: "Стандартное отклонение — это...", a: ["Корень из дисперсии", "Дисперсия", "Среднее", "Мода"] },
+        { q: "Дисперсия большая — значит:", a: ["Значения сильно разбросаны", "Все одинаковые", "Среднее большое", "Медиана большая"] },
+        { q: "Корреляция = 1 — значит:", a: ["Полная связь", "Нет связи", "Слабая связь", "Отрицательная"] },
+        { q: "Корреляция = -0.8 — значит:", a: ["Сильная отрицательная", "Положительная", "Нет связи", "Слабая"] },
+        { q: "Что такое выборка?", a: ["Часть от всех", "Все данные", "Среднее", "График"] },
+        { q: "p-значение < 0.05 — значит:", a: ["Значимо", "Не значимо", "Точно да", "Ошибка"] },
+        { q: "Нулевая гипотеза — это...", a: ["Нет эффекта", "Есть эффект", "Среднее = 0", "Мода = 0"] },
+        { q: "Что такое описательная статистика?", a: ["Средние, графики, таблицы", "Прогнозы", "Тесты", "Модели"] },
+        { q: "Что такое невозможное событие?", a: ["P = 0", "P = 1", "P = 0.5", "P > 0"] },
+        { q: "Что такое достоверное событие?", a: ["P = 1", "P = 0", "P = 0.5", "P < 1"] },
+        { q: "Что такое случайное событие?", a: ["P между 0 и 1", "P = 0", "P = 1", "P = 0.5"] },
+        { q: "Что такое совместные события?", a: ["Могут произойти вместе", "Не могут вместе", "Одно всегда", "Ни одно"] },
+        { q: "Что такое несовместные события?", a: ["Не могут произойти вместе", "Могут вместе", "Одно всегда", "Ни одно"] },
+        { q: "Что такое противоположные события?", a: ["A и не-A", "A и B", "A или B", "A + B"] },
+        { q: "Что такое дополнение события Ā?", a: ["Всё кроме A", "Только A", "A и B", "A или B"] },
+        { q: "Что такое независимые события?", a: ["Одно не влияет на другое", "Влияют друг на друга", "Суммируются", "Умножаются всегда"] }
+    ];
 
-        let currentQ = [];
-        let curIdx = 0;
-        let score = 0;
-        let log = [];
+    let currentQ = 0;
+    let score = 0;
+    let userHistory = [];
 
-        function startGame(lvl) {
-            const name = document.getElementById('userName').value.trim();
-            if (!name) {
-                const input = document.getElementById('userName');
-                input.classList.add('animate__animated', 'animate__shakeX');
-                setTimeout(() => input.classList.remove('animate__shakeX'), 500);
-                return;
-            }
+    // Helper: Shuffle array
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
-            // Сброс состояния
-            curIdx = 0;
-            score = 0;
-            log = [];
-            currentQ = [...QUESTIONS[lvl]].sort(() => 0.5 - Math.random());
+    function loadQuestion() {
+        const qData = questions[currentQ];
+        const correctAns = qData.a[0]; // First one is always correct in your source
+        
+        // Shuffle options
+        let options = shuffleArray([...qData.a]);
 
-            // Переход
-            switchScreen('scr-start', 'scr-game');
-            document.getElementById('lvl-display').innerText = lvl.toUpperCase();
-            renderQuestion();
+        document.getElementById('q-count').innerText = `Вопрос ${currentQ + 1}/${questions.length}`;
+        document.getElementById('q-text').innerText = qData.q;
+        
+        const box = document.getElementById('options-box');
+        box.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectAnswer(opt, correctAns, btn);
+            box.appendChild(btn);
+        });
+
+        document.getElementById('progress-bar').style.width = `${((currentQ) / questions.length) * 100}%`;
+    }
+
+    function selectAnswer(selected, correct, btn) {
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach(b => b.disabled = true);
+
+        const isCorrect = selected === correct;
+        if (isCorrect) {
+            score++;
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('wrong');
+            btns.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
         }
 
-        function switchScreen(outId, inId) {
-            const outEl = document.getElementById(outId);
-            const inEl = document.getElementById(inId);
-            outEl.classList.add('animate__animated', 'animate__fadeOut');
-            setTimeout(() => {
-                outEl.classList.add('hidden');
-                outEl.classList.remove('animate__animated', 'animate__fadeOut');
-                inEl.classList.remove('hidden');
-                inEl.classList.add('animate__animated', 'animate__fadeIn');
-            }, 400);
-        }
+        userHistory.push({ q: questions[currentQ].q, sel: selected, cor: correct, ok: isCorrect });
+        document.getElementById('score-display').innerText = `Баллы: ${score}`;
 
-        function renderQuestion() {
-            const q = currentQ[curIdx];
-            document.getElementById('q-step').innerText = `Вопрос ${curIdx + 1} / 15`;
-            document.getElementById('question-text').innerText = q.q;
-            
-            const box = document.getElementById('options-box');
-            box.innerHTML = '';
-            
-            q.a.forEach((text, i) => {
-                const b = document.createElement('button');
-                b.className = 'opt-btn animate__animated animate__fadeInUp';
-                b.style.animationDelay = (i * 0.05) + 's';
-                b.innerText = text;
-                b.onclick = () => check(i);
-                box.appendChild(b);
-            });
-
-            document.getElementById('bar').style.width = (curIdx / 15 * 100) + '%';
-        }
-
-        function check(idx) {
-            const q = currentQ[curIdx];
-            const correct = (idx === q.c);
-            if (correct) score++;
-            
-            log.push({
-                q: q.q,
-                ua: q.a[idx],
-                ca: q.a[q.c],
-                ok: correct
-            });
-
-            curIdx++;
-            if (curIdx < 15) {
-                renderQuestion();
+        setTimeout(() => {
+            currentQ++;
+            if (currentQ < questions.length) {
+                loadQuestion();
             } else {
-                showFinal();
+                showResults();
             }
-        }
+        }, 800);
+    }
 
-        function showFinal() {
-            switchScreen('scr-game', 'scr-end');
-            const name = document.getElementById('userName').value;
-            document.getElementById('score-heading').innerText = `${name}: ${score} / 15`;
-            
-            const list = document.getElementById('review-list');
-            list.innerHTML = '';
-            
-            log.forEach(item => {
-                const d = document.createElement('div');
-                d.className = `rev-card ${item.ok ? 'is-ok' : ''}`;
-                d.innerHTML = `<strong>${item.q}</strong><br>
-                ${item.ok ? `✅ ${item.ca}` : `❌ ${item.ua} <br> <span style="color:var(--junior)">✔️ Верно: ${item.ca}</span>`}`;
-                list.appendChild(d);
-            });
-        }
-    </script>
+    function showResults() {
+        document.getElementById('game-ui').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+        
+        const msg = document.getElementById('performance-msg');
+        const percent = (score / questions.length) * 100;
+        if (percent > 85) msg.innerText = "Отличный результат! Вы мастер эконометрики.";
+        else if (percent > 60) msg.innerText = "Хороший результат. Но есть что повторить.";
+        else msg.innerText = "Нужно подтянуть теорию.";
+    }
+
+    function startReview() {
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('review-mode').style.display = 'block';
+        const list = document.getElementById('review-list');
+        list.innerHTML = '';
+
+        userHistory.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'review-item';
+            div.innerHTML = `
+                <span class="status-tag ${item.ok ? 'tag-correct' : 'tag-wrong'}">${item.ok ? 'Верно' : 'Ошибка'}</span>
+                <div class="question-text" style="font-size: 1.1rem; margin-bottom: 10px;">${index + 1}. ${item.q}</div>
+                <div style="color: ${item.ok ? 'green' : 'red'}">Ваш ответ: ${item.sel}</div>
+                ${!item.ok ? `<div style="color: green">Правильный: ${item.cor}</div>` : ''}
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    // Start
+    loadQuestion();
+</script>
+
 </body>
 </html>
